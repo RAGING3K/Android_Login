@@ -103,24 +103,15 @@ public class Register extends Activity {
     /**
      * Async Task to check whether internet connection is working
      **/
-    private class NetCheck extends AsyncTask
+    private class NetCheck extends AsyncTask<Boolean, Void, Boolean>
     {
         private ProgressDialog nDialog;
+
         @Override
-        protected void onPreExecute(){
-            super.onPreExecute();
-            nDialog = new ProgressDialog(Register.this);
-            nDialog.setMessage("Loading..");
-            nDialog.setTitle("Checking Network");
-            nDialog.setIndeterminate(false);
-            nDialog.setCancelable(true);
-            nDialog.show();
-        }
-        @Override
-        protected Boolean doInBackground(String... args){
-/**
- * Gets current device state and checks for working internet connection by trying Google.
- **/
+        protected Boolean doInBackground(Boolean... params) {
+            /**
+             * Gets current device state and checks for working internet connection by trying Google.
+             **/
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo netInfo = cm.getActiveNetworkInfo();
             if (netInfo != null && netInfo.isConnected()) {
@@ -142,7 +133,18 @@ public class Register extends Activity {
             }
             return false;
         }
+
         @Override
+        protected void onPreExecute(){
+            super.onPreExecute();
+            nDialog = new ProgressDialog(Register.this);
+            nDialog.setMessage("Loading..");
+            nDialog.setTitle("Checking Network");
+            nDialog.setIndeterminate(false);
+            nDialog.setCancelable(true);
+            nDialog.show();
+        }
+
         protected void onPostExecute(Boolean th){
             if(th == true){
                 nDialog.dismiss();
@@ -154,7 +156,7 @@ public class Register extends Activity {
             }
         }
     }
-    private class ProcessRegister extends AsyncTask {
+    private class ProcessRegister extends AsyncTask<String, Void, JSONObject> {
         /**
          * Defining Process dialog
          **/
