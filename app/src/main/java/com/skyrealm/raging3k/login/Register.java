@@ -1,242 +1,121 @@
 package com.skyrealm.raging3k.login;
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-import com.skyrealm.raging3k.login.library.DatabaseHandler;
-import com.skyrealm.raging3k.login.library.UserFunctions;
-import com.skyrealm.raging3k.login.library.DatabaseHandler;
-import com.skyrealm.raging3k.login.library.UserFunctions;
-
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-public class Register extends Activity {
-    /**
-     *  JSON Response node names.
-     **/
-    private static String KEY_SUCCESS = "success";
-    private static String KEY_UID = "uid";
-    private static String KEY_FIRSTNAME = "fname";
-    private static String KEY_LASTNAME = "lname";
-    private static String KEY_USERNAME = "uname";
-    private static String KEY_EMAIL = "email";
-    private static String KEY_CREATED_AT = "created_at";
-    private static String KEY_ERROR = "error";
-    /**
-     * Defining layout items.
-     **/
-    EditText inputFirstName;
-    EditText inputLastName;
-    EditText inputUsername;
-    EditText inputEmail;
-    EditText inputPassword;
-    Button btnRegister;
-    TextView registerErrorMsg;
-    /**
-     * Called when the activity is first created.
-     */
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+public class Register extends Activity implements OnClickListener{
+    private EditText userreg, passreg;
+    private Button bRegister;
+    // Progress Dialog
+    private ProgressDialog pDialog;
+
+    // JSON parser class
+    JSONParser jsonParser = new JSONParser();
+    private static final String LOGIN_URL = "http://testdb.webege.com/register.php";
+    private static final String TAG_SUCCESS = "success";
+    private static final String TAG_MESSAGE = "message";
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.register);
-        /**
-         * Defining all layout items
-         **/
-        inputFirstName = (EditText) findViewById(R.id.fname);
-        inputLastName = (EditText) findViewById(R.id.lname);
-        inputUsername = (EditText) findViewById(R.id.uname);
-        inputEmail = (EditText) findViewById(R.id.email);
-        inputPassword = (EditText) findViewById(R.id.pword);
-        btnRegister = (Button) findViewById(R.id.register);
-        registerErrorMsg = (TextView) findViewById(R.id.register_error);
-/**
- * Button which Switches back to the login screen on clicked
- **/
-        Button login = (Button) findViewById(R.id.bktologin);
-        login.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                Intent myIntent = new Intent(view.getContext(), Login.class);
-                startActivityForResult(myIntent, 0);
-                finish();
-            }
-        });
-        /**
-         * Register Button click event.
-         * A Toast is set to alert when the fields are empty.
-         * Another toast is set to alert Username must be 5 characters.
-         **/
-        btnRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (  ( !inputUsername.getText().toString().equals("")) && ( !inputPassword.getText().toString().equals("")) && ( !inputFirstName.getText().toString().equals("")) && ( !inputLastName.getText().toString().equals("")) && ( !inputEmail.getText().toString().equals("")) )
-                {
-                    if ( inputUsername.getText().toString().length() > 4 ){
-                        NetAsync(view);
-                    }
-                    else
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                "Username should be minimum 5 characters", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(),
-                            "One or more fields are empty", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        setContentView(R.layout.activity_register);
+        userreg = (EditText)findViewById(R.id.user);
+        passreg = (EditText)findViewById(R.id.pass);
+        bRegister = (Button)findViewById(R.id.registerbutton   );
+        bRegister.setOnClickListener(this);
     }
-    /**
-     * Async Task to check whether internet connection is working
-     **/
-    private class NetCheck extends AsyncTask<Boolean, Void, Boolean>
-    {
-        private ProgressDialog nDialog;
 
-        @Override
-        protected Boolean doInBackground(Boolean... params) {
-            /**
-             * Gets current device state and checks for working internet connection by trying Google.
-             **/
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo netInfo = cm.getActiveNetworkInfo();
-            if (netInfo != null && netInfo.isConnected()) {
-                try {
-                    URL url = new URL("http://www.google.com");
-                    HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
-                    urlc.setConnectTimeout(3000);
-                    urlc.connect();
-                    if (urlc.getResponseCode() == 200) {
-                        return true;
-                    }
-                } catch (MalformedURLException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-            return false;
-        }
-
-        @Override
-        protected void onPreExecute(){
-            super.onPreExecute();
-            nDialog = new ProgressDialog(Register.this);
-            nDialog.setMessage("Loading..");
-            nDialog.setTitle("Checking Network");
-            nDialog.setIndeterminate(false);
-            nDialog.setCancelable(true);
-            nDialog.show();
-        }
-
-        protected void onPostExecute(Boolean th){
-            if(th == true){
-                nDialog.dismiss();
-                new ProcessRegister().execute();
-            }
-            else{
-                nDialog.dismiss();
-                registerErrorMsg.setText("Error in Network Connection");
-            }
+    @Override
+    public void onClick(View v) {
+        // TODO Auto-generated method stub
+        switch (v.getId()) {
+            case R.id.registerbutton:
+                new AttemptRegister().execute();
+                // here we have used, switch case, because on login activity you may //also want to show registration button, so if the user is new ! we can go the //registration activity , other than this we could also do this without switch //case.
+            default:
+                break;
         }
     }
-    private class ProcessRegister extends AsyncTask<String, Void, JSONObject> {
+
+    class AttemptRegister extends AsyncTask<String, String, String> {
         /**
-         * Defining Process dialog
-         **/
-        private ProgressDialog pDialog;
-        String email,password,fname,lname,uname;
+         * Before starting background thread Show Progress Dialog
+         * */
+        boolean failure = false;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            inputUsername = (EditText) findViewById(R.id.uname);
-            inputPassword = (EditText) findViewById(R.id.pword);
-            fname = inputFirstName.getText().toString();
-            lname = inputLastName.getText().toString();
-            email = inputEmail.getText().toString();
-            uname= inputUsername.getText().toString();
-            password = inputPassword.getText().toString();
             pDialog = new ProgressDialog(Register.this);
-            pDialog.setTitle("Contacting Servers");
-            pDialog.setMessage("Registering ...");
+            pDialog.setMessage("Registering...");
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(true);
             pDialog.show();
         }
+
         @Override
-        protected JSONObject doInBackground(String... args) {
-            UserFunctions userFunction = new UserFunctions();
-            JSONObject json = userFunction.registerUser(fname, lname, email, uname, password);
-            return json;
-        }
-        @Override
-        protected void onPostExecute(JSONObject json) {
-            /**
-             * Checks for success message.
-             **/
+        protected String doInBackground(String... args) {
+            // TODO Auto-generated method stub
+            // here Check for success tag
+            int success;
+            String user = userreg.getText().toString();
+            String pass = passreg.getText().toString();
             try {
-                if (json.getString(KEY_SUCCESS) != null) {
-                    registerErrorMsg.setText("");
-                    String res = json.getString(KEY_SUCCESS);
-                    String red = json.getString(KEY_ERROR);
-                    if(Integer.parseInt(res) == 1){
-                        pDialog.setTitle("Getting Data");
-                        pDialog.setMessage("Loading Info");
-                        registerErrorMsg.setText("Successfully Registered");
-                        DatabaseHandler db = new DatabaseHandler(getApplicationContext());
-                        JSONObject json_user = json.getJSONObject("user");
-                        /**
-                         * Removes all the previous data in the SQlite database
-                         **/
-                        UserFunctions logout = new UserFunctions();
-                        logout.logoutUser(getApplicationContext());
-                        db.addUser(json_user.getString(KEY_FIRSTNAME),json_user.getString(KEY_LASTNAME),json_user.getString(KEY_EMAIL),json_user.getString(KEY_USERNAME),json_user.getString(KEY_UID),json_user.getString(KEY_CREATED_AT));
-                        /**
-                         * Stores registered data in SQlite Database
-                         * Launch Registered screen
-                         **/
-                        Intent registered = new Intent(getApplicationContext(), Registered.class);
-                        /**
-                         * Close all views before launching Registered screen
-                         **/
-                        registered.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        pDialog.dismiss();
-                        startActivity(registered);
-                        finish();
-                    }
-                    else if (Integer.parseInt(red) ==2){
-                        pDialog.dismiss();
-                        registerErrorMsg.setText("User already exists");
-                    }
-                    else if (Integer.parseInt(red) ==3){
-                        pDialog.dismiss();
-                        registerErrorMsg.setText("Invalid Email id");
-                    }
-                }
-                else{
-                    pDialog.dismiss();
-                    registerErrorMsg.setText("Error occured in registration");
+
+                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("user", user));
+                params.add(new BasicNameValuePair("pass", pass));
+
+                Log.d("request!", "starting");
+
+                JSONObject json = jsonParser.makeHttpRequest(
+                        LOGIN_URL, "POST", params);
+
+                // checking  log for json response
+                Log.d("Registry attempt", json.toString());
+
+                // success tag for json
+                success = json.getInt(TAG_SUCCESS);
+                if (success == 1) {
+                    Log.d("You are Registered!", json.toString());
+
+                    Intent ii = new Intent(Register.this,Login.class);
+                    finish();
+                    // this finish() method is used to tell android os that we are done with current //activity now! Moving to other activity
+                    startActivity(ii);
+                    return json.getString(TAG_MESSAGE);
+                }else{
+
+                    return json.getString(TAG_MESSAGE);
+
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }}
-    public void NetAsync(View view){
-        new NetCheck().execute();
-    }}
+
+            return null;
+        }
+        /**
+         * Once the background process is done we need to  Dismiss the progress dialog asap
+         * **/
+        protected void onPostExecute(String message) {
+
+            pDialog.dismiss();
+            if (message != null){
+                Toast.makeText(Register.this, message, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+}

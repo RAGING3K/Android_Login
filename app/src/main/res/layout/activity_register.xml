@@ -7,46 +7,36 @@
     android:orientation="vertical" >
 
     <Button
-        android:id="@+id/login"
+        android:id="@+id/registerbutton"
         android:layout_width="118dp"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/password"
-        android:layout_alignRight="@+id/password"
-        android:layout_below="@+id/password"
-        android:text="login" />
+        android:layout_alignLeft="@+id/pass"
+        android:layout_alignRight="@+id/pass"
+        android:layout_below="@+id/pass"
+        android:text="Register" />
 
     <EditText
-        android:id="@+id/username"
+        android:id="@+id/user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/password"
 
         android:ems="10"
         android:focusable="true"
         android:hint="Enter username"
         android:imeOptions="actionNext"
-        />
+        android:layout_alignParentTop="true"
+        android:layout_alignLeft="@+id/registerbutton"
+        android:layout_alignStart="@+id/registerbutton" />
 
     <EditText
-        android:id="@+id/password"
+        android:id="@+id/pass"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/username"
+        android:layout_below="@+id/user"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="Enter Password"
         android:imeOptions="actionDone"
         />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="register"
-        android:id="@+id/registerlog"
-        android:layout_below="@+id/login"
-        android:layout_alignLeft="@+id/login"
-        android:layout_alignStart="@+id/login"
-        android:layout_alignRight="@+id/login"
-        android:layout_alignEnd="@+id/login" />
 
 </RelativeLayout>
