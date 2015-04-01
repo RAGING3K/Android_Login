@@ -13,7 +13,8 @@
         android:layout_alignLeft="@+id/password"
         android:layout_alignRight="@+id/password"
         android:layout_below="@+id/password"
-        android:text="login" />
+        android:text="login"
+        android:nestedScrollingEnabled="false" />
 
     <EditText
         android:id="@+id/username"

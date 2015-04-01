@@ -46,15 +46,14 @@ public class Login extends Activity implements OnClickListener{
         switch (v.getId()) {
             case R.id.login:
                 new AttemptLogin().execute();
+                break;
             case R.id.registerlog:
-                Regist = true;
-                if(Regist = true) {
-                    Regist = false;
+
                     Intent ii = new Intent(Login.this, Register.class);
                     finish();
                     // this finish() method is used to tell android os that we are done with current //activity now! Moving to other activity
                     startActivity(ii);
-                }
+
                 break;
             default:
                 break;
@@ -71,7 +70,7 @@ public class Login extends Activity implements OnClickListener{
         protected void onPreExecute() {
             super.onPreExecute();
             pDialog = new ProgressDialog(Login.this);
-            pDialog.setMessage("Attempting for login...");
+            pDialog.setMessage("Attempting to login...");
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(true);
             pDialog.show();
